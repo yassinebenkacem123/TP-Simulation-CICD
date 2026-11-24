@@ -1,0 +1,72 @@
+name: Pipeline CI-CD Python
+
+# Déclenchement automatique
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  # ÉTAPE 1 : BUILD ET TEST
+  build-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code source
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Installer les dépendances
+        run: |
+          pip install -r requirements.txt
+
+      - name: Exécuter les tests
+        run: |
+          pytest -v
+
+  # ÉTAPE 2 : DÉPLOIEMENT STAGING
+  deploy-staging:
+    name: Deploy Staging
+    needs: build-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Simuler le déploiement staging
+        run: |
+          echo "Déploiement en environnement STAGING..."
+          mkdir -p staging
+          echo "Version de test de l'application" > staging/app.txt
+          echo "Déploiement STAGING terminé avec succès"
+
+      - name: Sauvegarder la version staging
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-staging
+          path: staging/
+
+  # ÉTAPE 3 : DÉPLOIEMENT PRODUCTION
+  deploy-production:
+    name: Deploy Production
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Simuler le déploiement production
+        run: |
+          echo "Déploiement en environnement PRODUCTION..."
+          mkdir -p production
+          echo "Version stable de l'application" > production/app.txt
+          echo "Déploiement PRODUCTION terminé avec succès"
+
+      - name: Sauvegarder la version production
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-production
+          path: production/
